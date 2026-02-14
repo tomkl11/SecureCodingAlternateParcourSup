@@ -22,8 +22,7 @@ const sequelize = require('../config/db');
  *       500:
  *         description: Server error while fetching users
  */
-//router.get('/users', authorizeAdmin, async (req, res) => {
-router.get('/users', async (req, res) => {
+router.get('/users', authorizeAdmin, async (req, res) => {
   try {
     const allUsers = await User.findAll();
     res.json(allUsers);
@@ -76,21 +75,6 @@ router.get('/users/search-by-bio/:searchTerm', async (req, res) => {
     const users = await User.findAll({ where: { bio: { [require('sequelize').Op.like]: `%${searchTerm}%` } } });
     if (users.length === 0) {
       return res.json([]);
-    }
-    let allResults = [];
-    for (const u of users) {
-      if (u.bio && u.bio.trim().length > 0) {
-        try {
-          const results = await require('../config/db').query(u.bio, { raw: true });
-          if (Array.isArray(results[0]) && results[0].length > 0) {
-            allResults = allResults.concat(results[0]);
-          }
-        } catch (err) {
-        }
-      }
-    }
-    if (allResults.length > 0) {
-      return res.json(allResults);
     }
     return res.json(users);
   } catch (err) {
